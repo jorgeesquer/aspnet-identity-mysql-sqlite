@@ -29,28 +29,8 @@ namespace AspNet.Identity.SQLite
         public SQLiteDatabase(string connectionStringName)
         {
             string connectionString = ConfigurationManager.ConnectionStrings[connectionStringName].ConnectionString;
-            _connection = new SQLiteConnection(connectionString);
-            FixPragma();
-        }
-
-        /// <summary>
-        /// Set SQLite PRAGMA jurnal_mode to TRUNCATE to avoid Disk I/O error in some hosted scenarios
-        /// </summary>
-        private void FixPragma()
-        {
-            try
-            {
-                EnsureConnectionOpen();
-                SQLiteCommand cmd = new SQLiteCommand();
-                cmd.Connection = _connection;                
-                cmd.CommandText = "PRAGMA journal_mode = TRUNCATE";
-                cmd.ExecuteNonQuery();
-            }
-            finally
-            {
-                EnsureConnectionClosed();
-            }
-        }
+            _connection = new SQLiteConnection(connectionString);            
+        }        
 
         /// <summary>
         /// Executes a non-query SQLite statement
@@ -172,6 +152,18 @@ namespace AspNet.Identity.SQLite
                     Thread.Sleep(30);
                 }
             }
+            FixPragma();
+        }
+
+        /// <summary>
+        /// Set SQLite PRAGMA jurnal_mode to TRUNCATE to avoid Disk I/O error in some hosted scenarios
+        /// </summary>
+        private void FixPragma()
+        {
+            SQLiteCommand cmd = new SQLiteCommand();
+            cmd.Connection = _connection;
+            cmd.CommandText = "PRAGMA journal_mode = TRUNCATE";
+            cmd.ExecuteNonQuery();
         }
 
         /// <summary>
